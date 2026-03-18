@@ -2077,11 +2077,11 @@ window.apTab = function(id, btn){
   btn.classList.add('on');
 };
 /* ── Toast ── */
-function toast(msg){
+window.toast = function toast(msg){
   var el=document.createElement('div'); el.className='toast'; el.textContent=msg;
   document.body.appendChild(el);
   setTimeout(function(){ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(function(){ el.remove(); },320); },1800);
-}
+};
 /* ══ IMAGE HELPERS ══ */
 window.triggerImg = function(id){ document.getElementById(id).click(); };
 function readFile(file, cb){ var r=new FileReader(); r.onload=function(e){ cb(e.target.result); }; r.readAsDataURL(file); }
@@ -2107,12 +2107,15 @@ window.applyImgUrl = function(side){
 /* ═══════════════════════════════════════
    HERO SLIDESHOW ENGINE
 ═══════════════════════════════════════ */
-var SLIDES = { l: [], r: [] };      /* [{src, name}] */
-var SLIDE_IDX  = { l: 0, r: 0 };
-var SLIDE_TIMER = { l: null, r: null };
+window.SLIDES = { l: [], r: [] };   /* [{src, name}] */
+var SLIDES = window.SLIDES;
+window.SLIDE_IDX  = { l: 0, r: 0 };
+var SLIDE_IDX = window.SLIDE_IDX;
+window.SLIDE_TIMER = { l: null, r: null };
+var SLIDE_TIMER = window.SLIDE_TIMER;
 var SLIDE_SECS  = { l: 5, r: 5 };
 /* ── render slide layers in DOM ── */
-function renderSlides(side){
+window.renderSlides = function renderSlides(side){
   var half = document.querySelector('.hero-half.'+(side==='l'?'left':'right'));
   if(!half) return;
   /* remove old slide layers */
@@ -2142,7 +2145,7 @@ function renderSlides(side){
     half.appendChild(dotsEl);
   }
   startTimer(side);
-}
+};
 /* ── advance to specific slide ── */
 function goSlide(side, idx){
   var half = document.querySelector('.hero-half.'+(side==='l'?'left':'right'));
@@ -2167,13 +2170,13 @@ window.updateInterval = function(side, secs){
   startTimer(side);
 };
 /* ── add images ── */
-function addSlide(side, src, name){
+window.addSlide = function addSlide(side, src, name){
   SLIDES[side].push({ src: src, name: name || 'image-'+(SLIDES[side].length+1) });
   SLIDE_IDX[side] = SLIDES[side].length - 1; /* jump to new slide */
   renderSlides(side);
   renderAdminList(side);
-  toast('✅ 슬라이드 추가됨 ('+SLIDES[side].length+'장)');
-}
+  window.toast('✅ 슬라이드 추가됨 ('+SLIDES[side].length+'장)');
+};
 window.addSlideFiles = function(inp, side){
   if(!inp.files.length) return;
   Array.from(inp.files).forEach(function(file){
@@ -2507,7 +2510,9 @@ window.applyResortText = function(){
   toast('✅ 리조트 정보 적용됨');
 };
 /* ══ SCHEDULE EDITOR ══ */
-var SCHED_DATA={
+window.SCHED_DATA = window.SCHED_DATA || {};
+var SCHED_DATA = window.SCHED_DATA;
+SCHED_DATA = window.SCHED_DATA = {
   1:[
     {time:'06:00',name:'인천공항 출발 (베트남항공/대한항공)',sub:'ICN → SGN 또는 HAN · 약 5–6시간',type:'active'},
     {time:'12:00',name:'공항 → 전용버스 이동',sub:'호짬 멜리아 리조트 (약 1.5–2시간)',type:'free'},
@@ -2736,7 +2741,7 @@ window.changePw = function(){
 })();
 /* ══ MAP EDITOR ══ */
 /* Pin data - matches HTML map dots */
-var MAP_PINS = [
+window.MAP_PINS = [
   {el:null, label:'하이록스 레이스장', icon:'⚡', cls:'act'},
   {el:null, label:'바레 스튜디오',     icon:'🩰', cls:'act'},
   {el:null, label:'비치 러닝 코스',    icon:'🏃', cls:'act'},
@@ -2892,7 +2897,12 @@ function doMapBg(src){
     toast('⬆️ 업로드 중... ' + file.name);
     storage.ref(path).put(file)
       .then(function(snap){ return snap.ref.getDownloadURL(); })
-      .then(function(url){ toast('✅ 업로드 완료!'); cb(url); })
+      .then(function(url){
+        cb(url);
+        setTimeout(function(){
+          if(typeof window.saveToFirebase === 'function') window.saveToFirebase();
+        }, 300);
+      })
       .catch(function(e){
         console.error('Storage upload failed:', e);
         toast('❌ Storage 업로드 실패 — base64로 대체 저장: ' + e.message);
